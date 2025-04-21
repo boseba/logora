@@ -1,19 +1,7 @@
 import moment from "moment";
 import { LogLevel } from "../enums/level.enum";
-import { LogoraConfig } from "../models/config.model";
-
-export interface ILogora {
-  info(message: string, ...args: any[]): void;
-  warning(message: string, ...args: any[]): void;  
-  error(message: string, ...args: any[]): void;
-  debug(message: string, ...args: any[]): void;
-  success(message: string, ...args: any[]): void;
-  highlight(message: string, ...args: any[]): void;
-  title(title: string): void;
-  empty(count?: number): void;
-  clear(): void;
-  print(message: string, ...args: any[]): void;
-}
+import { LogoraConfig } from "../models/logora.config";
+import { ILogora } from "../models/logora.interface";
 
 export class Logora implements ILogora {
   private _config: LogoraConfig;
@@ -27,9 +15,9 @@ export class Logora implements ILogora {
     [LogLevel.Debug]: 4
   };
 
-  constructor() {
+  constructor(config?: Partial<LogoraConfig>) {
     this._lastLogDate.setDate(this._lastLogDate.getDate() - 1);
-    this._config = new LogoraConfig();
+    this._config = new LogoraConfig(config);
   }
 
   info(message: string, ...args: unknown[]): void {
