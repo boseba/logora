@@ -1,0 +1,36 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+types/
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Env files (if needed later)
+.env
+.env.local
+
+# VSCode / IDEs
+.vscode/
+.idea/
+
+# Testing (if you use vitest or jest)
+coverage/
+*.lcov
+
+# MacOS metadata
+._*
+
+# Temporary
+temp/
+tmp/
