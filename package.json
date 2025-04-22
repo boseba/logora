@@ -1,9 +1,12 @@
 {
   "name": "@boseba/logora",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A TypeScript logging utility with colors and formatting.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "require": "./dist/index.js",
@@ -16,7 +19,7 @@
     "clean": "rm -rf dist"
   },
   "keywords": ["logger", "typescript", "logging", "console"],
-  "author": "Sébastien Bosmans",
+  "author": "Sébastien Bosmans <https://github.com/boseba>",
   "license": "MIT",
   "devDependencies": {
     "tsup": "^8.4.0",
