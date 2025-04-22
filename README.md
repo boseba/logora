@@ -1,5 +1,7 @@
 # @boseba/logora
 
+[![NPM version](https://img.shields.io/npm/v/@boseba/logora?style=flat-square)](https://www.npmjs.com/package/@boseba/logora)
+
 A lightweight and customizable logger service written in TypeScript, with support for log levels, color formatting, message templating, and timestamped output.
 
 ## Features
