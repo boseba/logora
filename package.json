@@ -1,6 +1,6 @@
 {
   "name": "@boseba/logora",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A TypeScript logging utility with colors and formatting.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
