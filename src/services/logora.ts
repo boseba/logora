@@ -7,7 +7,8 @@ import { ILogora } from "../models/logora.interface";
  * Logora is a customizable logger with color support, levels, and templated messages.
  */
 export class Logora implements ILogora {
-  private _config: LogoraConfig;
+  config: LogoraConfig;
+  
   private _lastLogDate = new Date();
 
   private readonly logLevels = {
@@ -24,7 +25,7 @@ export class Logora implements ILogora {
    */
   constructor(config?: Partial<LogoraConfig>) {
     this._lastLogDate.setDate(this._lastLogDate.getDate() - 1);
-    this._config = new LogoraConfig(config);
+    this.config = new LogoraConfig(config);
   }
 
   /**
@@ -34,7 +35,7 @@ export class Logora implements ILogora {
    */
   info(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Info)) return;
-    this.log(this.formatWithLabel("Info", this._config.colors.info, message, args));
+    this.log(this.formatWithLabel("Info", this.config.colors.info, message, args));
   }
 
   /**
@@ -44,7 +45,7 @@ export class Logora implements ILogora {
    */
   warning(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Warning)) return;
-    this.log(this.formatWithLabel("Warning", this._config.colors.warning, message, args));
+    this.log(this.formatWithLabel("Warning", this.config.colors.warning, message, args));
   }
 
   /**
@@ -53,7 +54,7 @@ export class Logora implements ILogora {
    * @param args Optional dynamic values for templating.
    */
   error(message: string, ...args: unknown[]): void {
-    this.log(this.formatWithLabel("Error", this._config.colors.error, message, args));
+    this.log(this.formatWithLabel("Error", this.config.colors.error, message, args));
   }
 
   /**
@@ -63,7 +64,7 @@ export class Logora implements ILogora {
    */
   success(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Success)) return;
-    this.log(this.formatWithLabel("Success", this._config.colors.success, message, args));
+    this.log(this.formatWithLabel("Success", this.config.colors.success, message, args));
   }
 
   /**
@@ -73,7 +74,7 @@ export class Logora implements ILogora {
    */
   debug(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Debug)) return;
-    this.log(this.formatWithLabel("Debug", this._config.colors.debug, message, args, this._config.colors.emphasis));
+    this.log(this.formatWithLabel("Debug", this.config.colors.debug, message, args, this.config.colors.emphasis));
   }
 
   /**
@@ -82,7 +83,7 @@ export class Logora implements ILogora {
    * @param args Optional dynamic values for templating.
    */
   highlight(message: string, ...args: unknown[]): void {
-    this.log(this.formatWithLabel("Highlight", this._config.colors.highlight, message, args, this._config.colors.emphasis));
+    this.log(this.formatWithLabel("Highlight", this.config.colors.highlight, message, args, this.config.colors.emphasis));
   }
 
   /**
@@ -90,7 +91,7 @@ export class Logora implements ILogora {
    * @param title The title string.
    */
   title(title: string): void {
-    console.log(`${this._config.colors.title}${title}${this._config.colors.text}`);
+    console.log(`${this.config.colors.title}${title}${this.config.colors.text}`);
   }
 
   /**
@@ -115,7 +116,7 @@ export class Logora implements ILogora {
    */
   print(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Info)) return;
-    const str = this.format(message, args, this._config.colors.info);
+    const str = this.format(message, args, this.config.colors.info);
     console.log(str);
   }
 
@@ -124,7 +125,7 @@ export class Logora implements ILogora {
    * @param level The log level.
    */
   private shouldLog(level: LogLevel): boolean {
-    return this.logLevels[this._config.level] >= this.logLevels[level];
+    return this.logLevels[this.config.level] >= this.logLevels[level];
   }
 
   /**
@@ -137,7 +138,7 @@ export class Logora implements ILogora {
    */
   private formatWithLabel(label: string, color: string, message: string, args: unknown[], valueColor?: string): string {
     const formatted = this.format(message, args, valueColor ?? color);
-    return `${color}${label}${this._config.colors.text}: ${formatted}`;
+    return `${color}${label}${this.config.colors.text}: ${formatted}`;
   }
 
   /**
@@ -150,7 +151,7 @@ export class Logora implements ILogora {
     return message.replace(/{(\d+)}/g, (match: string, index: string): string => {
       const value = args[+index];
       return typeof value !== "undefined"
-        ? `${valueColor}${value}${this._config.colors.text}`
+        ? `${valueColor}${value}${this.config.colors.text}`
         : match;
     });
   }
@@ -162,10 +163,10 @@ export class Logora implements ILogora {
   private log(message: string): void {
     const date = new Date();
     if (date.getDay() !== this._lastLogDate.getDay()) {
-      console.log('\n\n' + `${this._config.colors.emphasis}${moment().format(this._config.logsDateFormat)}\n`);
+      console.log('\n\n' + `${this.config.colors.emphasis}${moment().format(this.config.logsDateFormat)}\n`);
     }
 
-    console.log(`${this._config.colors.date}[${moment().format(this._config.logTimestampFormat)}] ${message}`);
+    console.log(`${this.config.colors.date}[${moment().format(this.config.logTimestampFormat)}] ${message}`);
     this._lastLogDate = date;
   }
 }
