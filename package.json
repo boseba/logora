@@ -1,6 +1,6 @@
 {
   "name": "@boseba/logora",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A TypeScript logging utility with colors and formatting.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,10 +14,10 @@
     }
   },
   "scripts": {
+    "lint": "eslint . --ext .ts",
+    "test": "vitest run",
     "build": "tsup",
-    "dev": "tsup --watch",
     "clean": "rm -rf dist",
-    "test": "vitest",
     "coverage": "vitest run --coverage"
   },
   "keywords": [
