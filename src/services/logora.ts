@@ -91,7 +91,7 @@ export class Logora implements ILogora {
    * @param title The title string.
    */
   title(title: string): void {
-    console.log(`${this.config.colors.title}${title}${this.config.colors.text}`);
+    console.log(this.colorize(title, this.config.colors.title));
   }
 
   /**
@@ -138,7 +138,7 @@ export class Logora implements ILogora {
    */
   private formatWithLabel(label: string, color: string, message: string, args: unknown[], valueColor?: string): string {
     const formatted = this.format(message, args, valueColor ?? color);
-    return `${color}${label}${this.config.colors.text}: ${formatted}`;
+    return `${this.colorize(label, color)}: ${formatted}`;
   }
 
   /**
@@ -151,7 +151,7 @@ export class Logora implements ILogora {
     return message.replace(/{(\d+)}/g, (match: string, index: string): string => {
       const value = args[+index];
       return typeof value !== "undefined"
-        ? `${valueColor}${value}${this.config.colors.text}`
+        ? this.colorize(String(value), valueColor)
         : match;
     });
   }
@@ -163,10 +163,21 @@ export class Logora implements ILogora {
   private log(message: string): void {
     const date = new Date();
     if (date.getDay() !== this._lastLogDate.getDay()) {
-      console.log('\n\n' + `${this.config.colors.emphasis}${moment().format(this.config.logsDateFormat)}\n`);
+      // It's a new day, print a separator 
+      console.log('\n\n' + this.colorize(moment().format(this.config.logsDateFormat), this.config.colors.emphasis) + '\n');
     }
 
-    console.log(`${this.config.colors.date}[${moment().format(this.config.logTimestampFormat)}] ${message}`);
+    console.log(`[${this.colorize(moment().format(this.config.logTimestampFormat), this.config.colors.date)}] ${message}`);
     this._lastLogDate = date;
+  }
+
+  /**
+   * Applies color to the text if useColors is enabled.
+   * @param text The text to colorize.
+   * @param color The ANSI color code to use.
+   * @returns The styled or raw text.
+   */
+  private colorize(text: string, color: string): string {
+    return this.config.useColors ? `${color}${text}${this.config.colors.text}` : text;
   }
 }

@@ -52,6 +52,14 @@ export class LogoraConfig {
   logTimestampFormat = 'HH:mm:ss';
 
   /**
+   * Enables or disables ANSI color codes in the console output.
+   * Set to `false` to produce plain text logs (e.g., for CI environments or log files).
+   * 
+   * @default true
+   */
+  useColors = true;
+
+  /**
    * Creates a new LogoraConfig instance, optionally overriding default values.
    * @param config Partial configuration object to override defaults.
    */

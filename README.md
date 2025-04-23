@@ -49,6 +49,18 @@ const logger = new Logora({ level: LogLevel.Warning });
 
 ### Configuration
 
+You can also disable ANSI color codes using the `useColors` option:
+
+```ts
+const logger = createLogora({
+  useColors: false, // disables ANSI styling
+  level: LogLevel.Info
+});
+```
+
+This is useful in CI pipelines or log file outputs where plain text is preferred.
+
+
 You can pass a partial configuration object to customize the logger behavior:
 
 ```ts

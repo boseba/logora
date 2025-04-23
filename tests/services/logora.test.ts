@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Logora } from "../src/services/logora";
-import { LogLevel } from "../src/enums/level.enum";
+import { Logora } from "../../src/services/logora";
+import { LogLevel } from "../../src/enums/level.enum";
 
 describe("Logora", () => {
   let logger: Logora;
@@ -76,7 +76,9 @@ describe("Logora", () => {
   });
 
   it("should include timestamp and format on log", () => {
+    logger = new Logora({ level: LogLevel.Info, useColors: false }); // désactive les couleurs
     logger.info("Test timestamp");
+  
     const logCall = logSpy.mock.calls.find(call => (call[0] as string).includes("Test timestamp"));
     expect(logCall?.[0]).toMatch(/\[\d{2}:\d{2}:\d{2}\]/); // [HH:mm:ss]
   });
