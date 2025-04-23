@@ -82,4 +82,75 @@ describe("Logora", () => {
     const logCall = logSpy.mock.calls.find(call => (call[0] as string).includes("Test timestamp"));
     expect(logCall?.[0]).toMatch(/\[\d{2}:\d{2}:\d{2}\]/); // [HH:mm:ss]
   });
+
+  it("should retain unmatched placeholders in message formatting", () => {
+    logger.info("Only one param: {0} and {1}", "A");
+    const output = logSpy.mock.calls.map(call => call[0]).join("\n");
+    expect(output).toContain("A");
+    expect(output).toContain("{1}"); // Non remplacé
+  });
+
+  it("should print the day change header when date has changed", () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    logger["_lastLogDate"] = yesterday;
+
+    logger.info("New day started");
+
+    const output = logSpy.mock.calls.map(call => call[0]).join("\n");
+    expect(output).toMatch(/\d{4}/); // Format long (ex: April 23rd 2025)
+  });
+
+  it("should leave unmatched placeholders untouched", () => {
+    logger.info("Message: {0}, Missing: {1}", "OK");
+    const output = logSpy.mock.calls.map(call => call[0]).join("\n");
+    expect(output).toContain("{1}"); // confirms fallback branch is hit
+  });
 });
+
+describe("logAtLevel", () => {
+  let logger: Logora;
+  let logSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    logger = new Logora({ level: LogLevel.Debug, useColors: false });
+    logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
+  });
+
+  it("should delegate to info()", () => {
+    logger.logAtLevel(LogLevel.Info, "Info test {0}", 1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Info"));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("1"));
+  });
+
+  it("should delegate to warning()", () => {
+    logger.logAtLevel(LogLevel.Warning, "Warning test {0}", 2);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Warning"));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("2"));
+  });
+
+  it("should delegate to error() even if log level is above threshold", () => {
+    logger = new Logora({ level: LogLevel.Error, useColors: false });
+    logger.logAtLevel(LogLevel.Error, "Error test {0}", "E");
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Error"));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("E"));
+  });
+
+  it("should skip debug log if below current log level", () => {
+    logger = new Logora({ level: LogLevel.Warning, useColors: false });
+    logger.logAtLevel(LogLevel.Debug, "This should not log");
+    expect(logSpy).not.toHaveBeenCalled();
+  });
+
+  it("should fallback to highlight() if unknown level is passed", () => {
+    logger = new Logora({ level: LogLevel.Debug, useColors: false });
+    logger.logAtLevel(999 as unknown as LogLevel, "Fallback log {0}", "X");
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Highlight"));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("X"));
+  });
+});
+
