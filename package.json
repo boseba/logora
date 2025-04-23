@@ -16,7 +16,9 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "test": "vitest run",
+    "test:dev": "vitest",
     "build": "tsup",
+    "build:dev": "tsup --watch",
     "clean": "rm -rf dist",
     "coverage": "vitest run --coverage"
   },
