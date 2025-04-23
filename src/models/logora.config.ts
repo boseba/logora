@@ -29,7 +29,9 @@ export class LogoraConfig {
     /** Color used for emphasized messages */
     highlight: ConsoleColor.Magenta,
     /** Color used for values inserted into templates */
-    emphasis: ConsoleColor.White
+    emphasis: ConsoleColor.White,
+    /** Color used to display the scope name */
+    scope: ConsoleColor.Bright
   };
 
   /**

@@ -72,3 +72,4 @@ describe("Logora with useColors = true (default)", () => {
     expect(output).toContain(ConsoleColor.Reset);
   });
 });
+

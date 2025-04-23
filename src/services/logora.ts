@@ -2,6 +2,7 @@ import moment from "moment";
 import { LogLevel } from "../enums/level.enum";
 import { LogoraConfig } from "../models/logora.config";
 import { ILogora } from "../models/logora.interface";
+import { ConsoleColor } from "../enums";
 
 /**
  * Logora is a customizable logger with color support, levels, and templated messages.
@@ -10,6 +11,7 @@ export class Logora implements ILogora {
   config: LogoraConfig;
 
   private _lastLogDate = new Date();
+  private _scope?: { label: string; color: ConsoleColor };
 
   private readonly logLevels = {
     [LogLevel.Error]: 0,
@@ -29,6 +31,40 @@ export class Logora implements ILogora {
   }
 
   /**
+   * Returns a new logger instance scoped with the given context label.
+   *
+   * The returned instance will automatically prefix all messages with the specified scope.
+   * Optionally, you can define a custom color for the scope label. If omitted, the default
+   * color defined in `LogoraConfig.colors.scope` will be used.
+   *
+   * This method does not modify the current logger instance.
+   *
+   * @param scope - The scope label (e.g. "Auth", "DB", "HTTP") to prefix log entries with.
+   * @param color - Optional ANSI color code for the scope label (e.g. ConsoleColor.Magenta).
+   * @returns A new scoped instance of the logger.
+   */
+  getScoped(scope: string, color?: ConsoleColor): ILogora {
+    const scoped = new Logora(this.config);
+    scoped._lastLogDate = this._lastLogDate;
+    scoped.setScope(scope, color);
+
+    return scoped;
+  }
+
+  /**
+   * Internally sets the scope label and resolved color for the current logger instance.
+   *
+   * If no color is provided, the default scope color defined in `LogoraConfig.colors.scope` is used.
+   * This is used internally by `getScoped()` and should not be called directly.
+   *
+   * @param scope - The scope label to apply (e.g. "Auth", "HTTP").
+   * @param color - Optional ANSI color code to colorize the scope label.
+   */
+  private setScope(scope: string, color?: ConsoleColor): void {
+    this._scope = { label: scope, color: color ?? this.config.colors.scope };
+  }
+
+  /**
    * Logs an informational message.
    * @param message The message template.
    * @param args Optional dynamic values for templating.
@@ -36,7 +72,7 @@ export class Logora implements ILogora {
   info(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Info)) return;
     this.log(
-      this.formatWithLabel("Info", this.config.colors.info, message, args)
+      this.compose("Info", this.config.colors.info, message, args)
     );
   }
 
@@ -48,7 +84,7 @@ export class Logora implements ILogora {
   warning(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Warning)) return;
     this.log(
-      this.formatWithLabel("Warning", this.config.colors.warning, message, args)
+      this.compose("Warning", this.config.colors.warning, message, args)
     );
   }
 
@@ -59,7 +95,7 @@ export class Logora implements ILogora {
    */
   error(message: string, ...args: unknown[]): void {
     this.log(
-      this.formatWithLabel("Error", this.config.colors.error, message, args)
+      this.compose("Error", this.config.colors.error, message, args)
     );
   }
 
@@ -71,7 +107,7 @@ export class Logora implements ILogora {
   success(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Success)) return;
     this.log(
-      this.formatWithLabel("Success", this.config.colors.success, message, args)
+      this.compose("Success", this.config.colors.success, message, args)
     );
   }
 
@@ -83,7 +119,7 @@ export class Logora implements ILogora {
   debug(message: string, ...args: unknown[]): void {
     if (!this.shouldLog(LogLevel.Debug)) return;
     this.log(
-      this.formatWithLabel(
+      this.compose(
         "Debug",
         this.config.colors.debug,
         message,
@@ -100,7 +136,7 @@ export class Logora implements ILogora {
    */
   highlight(message: string, ...args: unknown[]): void {
     this.log(
-      this.formatWithLabel(
+      this.compose(
         "Highlight",
         this.config.colors.highlight,
         message,
@@ -186,14 +222,17 @@ export class Logora implements ILogora {
   }
 
   /**
-   * Formats a message with a level label and color.
-   * @param label The log label (e.g. "Info").
-   * @param color Color for the label.
-   * @param message Message template.
-   * @param args Arguments to insert in the template.
-   * @param valueColor Optional color for the values.
+   * Formats a message by applying the scope (if any), the log level label,
+   * and injecting arguments into the message template.
+   *
+   * @param label - The log level label (e.g. "Info", "Error").
+   * @param color - The color to apply to the label.
+   * @param message - The templated message to log.
+   * @param args - Optional arguments to inject into the message.
+   * @param valueColor - Optional color for the injected values.
+   * @returns A fully formatted log message string.
    */
-  private formatWithLabel(
+  private compose(
     label: string,
     color: string,
     message: string,
@@ -201,7 +240,14 @@ export class Logora implements ILogora {
     valueColor?: string
   ): string {
     const formatted = this.format(message, args, valueColor ?? color);
-    return `${this.colorize(label, color)}: ${formatted}`;
+
+    const scopePart = this._scope
+      ? `[${this.colorize(this._scope.label, this._scope.color)}]`
+      : "";
+
+    const labelPart = this.colorize(label, color);
+
+    return `${scopePart} ${labelPart}: ${formatted}`.trim();
   }
 
   /**
