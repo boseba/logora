@@ -1,2 +1,2 @@
-export * from './logora.config';
-export * from './logora.interface';
+export * from "./logora.config";
+export * from "./logora.interface";

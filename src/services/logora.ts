@@ -164,7 +164,7 @@ export class Logora implements ILogora {
     const date = new Date();
     if (date.getDay() !== this._lastLogDate.getDay()) {
       // It's a new day, print a separator 
-      console.log('\n\n' + this.colorize(moment().format(this.config.logsDateFormat), this.config.colors.emphasis) + '\n');
+      console.log("\n\n" + this.colorize(moment().format(this.config.logsDateFormat), this.config.colors.emphasis) + "\n");
     }
 
     console.log(`[${this.colorize(moment().format(this.config.logTimestampFormat), this.config.colors.date)}] ${message}`);

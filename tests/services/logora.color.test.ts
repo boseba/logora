@@ -20,6 +20,7 @@ describe("Logora with useColors = false", () => {
     const logged = logSpy.mock.calls.map(call => call[0]).join("\n");
 
     // Check for absence of ANSI escape characters
+    // eslint-disable-next-line no-control-regex
     const hasAnsi = /\x1b\[[0-9;]*m/.test(logged);
     expect(hasAnsi).toBe(false);
   });
@@ -55,6 +56,7 @@ describe("Logora with useColors = true (default)", () => {
     const logged = logSpy.mock.calls.map(call => call[0]).join("\n");
 
     // Look for ANSI escape sequences like \x1b[36m or \x1b[0m
+    // eslint-disable-next-line no-control-regex
     const hasAnsi = /\x1b\[[0-9;]*m/.test(logged);
     expect(hasAnsi).toBe(true);
   });

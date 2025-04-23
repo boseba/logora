@@ -43,13 +43,13 @@ export class LogoraConfig {
    * Moment.js date format string used for displaying full dates in logs.
    * Default: 'MMMM Do YYYY, hh:mm:ss'
    */
-  logsDateFormat = 'MMMM Do YYYY, hh:mm:ss';
+  logsDateFormat = "MMMM Do YYYY, hh:mm:ss";
 
   /**
    * Moment.js date format string used for displaying time next to each log entry.
    * Default: 'HH:mm:ss'
    */
-  logTimestampFormat = 'HH:mm:ss';
+  logTimestampFormat = "HH:mm:ss";
 
   /**
    * Enables or disables ANSI color codes in the console output.

@@ -1,10 +1,10 @@
-import { Logora } from './services/logora';
-import { LogoraConfig } from './models/logora.config';
-import { ILogora } from './models/logora.interface';
+import { Logora } from "./services/logora";
+import { LogoraConfig } from "./models/logora.config";
+import { ILogora } from "./models/logora.interface";
 
-export * from './enums';
-export * from './models';
-export * from './services';
+export * from "./enums";
+export * from "./models";
+export * from "./services";
 
 /**
  * Factory function to create a new instance of the Logora logger.
