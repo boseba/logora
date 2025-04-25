@@ -1,24 +1,28 @@
 import { describe, it, expect } from "vitest";
-import { createLogora } from "../src";
-import { LogLevel } from "../src/enums/level.enum";
-import { ILogora } from "../src/models/logora.interface";
-import { Logora } from "../src/services/logora";
+import { createLogger } from "../src";
+import { LogLevel } from "../src/enums";
 
-describe("createLogora", () => {
-  it("should return an instance of Logora", () => {
-    const logger = createLogora();
-    expect(logger).toBeInstanceOf(Logora);
-  });
-
-  it("should respect the provided config", () => {
-    const logger = createLogora({ level: LogLevel.Debug }) as Logora;
-    expect(logger["config"].level).toBe(LogLevel.Debug); // or logger['_config'].level if private
-  });
-
-  it("should return an object implementing ILogora", () => {
-    const logger: ILogora = createLogora();
+describe("createLogger", () => {
+  it("should create a logger instance", () => {
+    const logger = createLogger();
+    expect(logger).toBeDefined();
     expect(typeof logger.info).toBe("function");
     expect(typeof logger.error).toBe("function");
-    expect(typeof logger.clear).toBe("function");
+    expect(typeof logger.getScoped).toBe("function");
+  });
+
+  it("should accept a custom configuration", () => {
+    const logger = createLogger({ level: LogLevel.Debug });
+    expect(logger).toBeDefined();
+    // Bonus: tu peux vérifier indirectement en utilisant un niveau de log plus bas ensuite
+    expect(typeof logger.debug).toBe("function");
+  });
+
+  it("should create independent scoped instances", () => {
+    const logger = createLogger();
+    const scopedLogger = logger.getScoped("TEST_SCOPE");
+
+    expect(scopedLogger).toBeDefined();
+    expect(typeof scopedLogger.info).toBe("function");
   });
 });

@@ -1,13 +1,15 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ['src/index.ts'],
-  outDir: 'dist', 
-  format: ['cjs'],
-  dts: true,
+  entry: ["src/index.ts", "src/module.ts"],
+  outDir: "dist", 
+  format: ["cjs", "esm"],
+  dts: false,
   clean: true,
   minify: false,
   sourcemap: false, 
-  target: 'es2019', 
+  splitting: false,
+  treeshake: true,
+  target: "es2019", 
   skipNodeModulesBundle: true
 });

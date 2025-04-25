@@ -7,6 +7,30 @@ and adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.0.0] - 2024-04-25
+
+### Major changes
+- Logora has been fully modularized.
+- The core library `logora` no longer includes any rendering or output logic.
+- Outputs (such as `logora-console`, `logora-file`) must now be installed separately.
+
+### Added
+- `createLogger(config?)` factory method to instantiate a lightweight logger.
+- Support for multiple independent outputs (`ILogoraOutput`).
+- Queue system for asynchronous, non-blocking log dispatch.
+- Scoped loggers via `getScoped(scope: string)` method.
+- Configurable `queueLimit`, `onError` and `onDrop` hooks.
+- Full TypeScript type safety (`ILogora`, `ILogoraOutput`, `LogEntry`).
+
+### Removed
+- Built-in console output (now moved to a separate package `logora-console`).
+
+### Breaking Changes
+- Logora no longer prints anything by default.
+- Developers must install at least one output module to see logs.
+
+---
+
 ## [1.1.0] - 2025-04-23
 
 ### Added

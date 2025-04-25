@@ -1,150 +1,162 @@
-# @boseba/logora
+# Logora
 
-[![NPM version](https://img.shields.io/npm/v/@boseba/logora?style=flat-square)](https://www.npmjs.com/package/@boseba/logora)
+[![NPM version](https://img.shields.io/npm/v/logora?style=flat-square)](https://www.npmjs.com/package/logora)
 
-A lightweight and customizable logger service written in TypeScript, with support for log levels, color formatting, message templating, and timestamped output.
+Logora is a lightweight, flexible, and modular logging core written in TypeScript.
 
-## Features
+It is designed to handle structured log entries asynchronously, and dispatch them to one or multiple independent output modules (such as logora-console, logora-file, or custom outputs).
 
-- Log levels: `error`, `warning`, `success`, `info`, `debug`, `highlight`
-- Templated messages with placeholders (`{0}`, `{1}`, ...)
-- Colored console output with customizable color schemes
-- Date and time formatting per message
-- Optional log filtering by level
+## Table of Contents
+
+- Key Principles
+- Installation
+- Usage
+- Configuration Options
+- Supported Outputs
+- Creating Custom Outputs
+- Philosophy
+- License
+
+## Key Principles
+
+- Lightweight: Core logic only, no rendering or output code included.
+- Flexible: Supports attaching multiple simultaneous outputs.
+- Extensible: Simple interfaces for writing custom outputs.
+- Non-blocking: Asynchronous dispatch using a microtask queue.
+- Structured Logging: Consistent log entry format across outputs.
 
 ## Installation
 
 ```bash
-npm install @boseba/logora
+npm install logora
 ```
 
-Or link it locally during development:
+Important:
+Logora itself does not display anything.
+You must install and configure at least one output module to see or persist logs.
+
+Example for console output:
 
 ```bash
-npm install /path/to/logora
+npm install logora-console
 ```
 
-## 🔧 Usage
+## Usage
 
-### Basic instantiation
-
-You can create an instance of the logger using the `createLogora()` factory function:
+### Basic Setup
 
 ```ts
-import { createLogora, LogLevel } from '@boseba/logora';
+import { createLogger } from "logora";
+import { consoleOutput } from "logora-console";
 
-const logger = createLogora({ level: LogLevel.Debug });
+const logger = createLogger({
+  outputs: [consoleOutput()]
+});
 
-logger.success("Server is ready");
-logger.debug("Debugging data: {0}", someObject);
+logger.success("Application started successfully.");
+logger.info("Listening on port {0}", 3000);
 ```
 
-Or instantiate the class directly if preferred:
+### Scoped Logging
 
 ```ts
-import { Logora, LogLevel } from '@boseba/logora';
+const dbLogger = logger.getScoped("Database");
 
-const logger = new Logora({ level: LogLevel.Warning });
+dbLogger.warning("Connection retry {0}", 3);
+dbLogger.error("Unable to connect to {0}", "primary-db");
 ```
 
-### Configuration
+Each scoped logger automatically prefixes log entries with the provided scope.
 
-You can also disable ANSI color codes using the `useColors` option:
+## Configuration Options
+
+You can configure logora by passing a partial LogoraConfig object to createLogger:
 
 ```ts
-const logger = createLogora({
-  useColors: false, // disables ANSI styling
-  level: LogLevel.Info
+import { LogLevel } from "logora";
+
+const logger = createLogger({
+  level: LogLevel.Info,
+  queueLimit: 1000,
+  onDrop: (entry) => {
+    console.warn("Log dropped:", entry.message);
+  },
+  onError: (error, entry) => {
+    console.error("Failed to flush log:", entry.message, error);
+  },
+  outputs: [ /* your output instances */ ]
 });
 ```
 
-This is useful in CI pipelines or log file outputs where plain text is preferred.
+### Available Log Levels
 
+| Level    | Description                      |
+|----------|----------------------------------|
+| Debug    | Diagnostic details for developers |
+| Info     | General application events       |
+| Success  | Positive events                  |
+| Warning  | Potential issues, recoverable    |
+| Error    | Serious problems or failures     |
+| Highlight| Emphasis-only messages           |
 
-You can pass a partial configuration object to customize the logger behavior:
+Highlight logs are always displayed regardless of log level.
+
+## Supported Outputs
+
+Logora itself is output-agnostic. You can plug in any number of output modules, for example:
+
+- logora-console (console output with colors and timestamps)
+- logora-file (file system output for logs)
+- logora-remote (send logs to a remote server)
+
+Each output module implements the ILogoraOutput interface.
+
+You can use multiple outputs at once.
+
+## Creating Custom Outputs
+
+To create your own output module:
+
+1. Implement ILogoraOutput (providing a name, options, and writer).
+2. Implement the ILogoraWriter methods: log, title, empty, clear, print.
+
+Example:
 
 ```ts
-const logger = createLogora({
-  level: LogLevel.Info,
-  colors: {
-    success: ConsoleColor.Green,
-    error: ConsoleColor.Red,   // red
+import type { ILogoraOutput, ILogoraWriter } from "logora";
+import { LogLevel } from "logora";
+
+export const customOutput = (): ILogoraOutput => ({
+  name: "custom",
+  options: {
+    level: LogLevel.Info,
+    timestampFormat: "HH:mm:ss"
+  },
+  writer: {
+    log: (entry) => { /* render or store the entry */ },
+    title: (title) => { /* handle titles */ },
+    empty: (count) => { /* handle spacing */ },
+    clear: () => { /* clear output if needed */ },
+    print: (message) => { /* raw message */ }
   }
 });
 ```
 
----
+Outputs can filter logs individually based on their configured level.
 
-## Getting Started Example
+## Philosophy
 
-Here’s a simple real-world usage of the logger in a Node.js server:
+Logora was created to provide a minimal yet powerful foundation for logging ecosystems.
 
-```ts
-import http from 'http';
-import { createLogora, LogLevel } from '@boseba/logora';
-
-const logger = createLogora({ level: LogLevel.Debug });
-
-const server = http.createServer((req, res) => {
-  logger.info("Incoming request: {0} {1}", req.method, req.url);
-  res.writeHead(200);
-  res.end("Hello World");
-});
-
-server.listen(4000, () => {
-  const environment = process.env.NODE_ENV || 'development';
-  logger.success("Server running in {0} on port {1}...", environment, 4000);
-});
-```
-
----
-
-## Log Levels
-
-| Level   | Value | Description                  |
-|---------|-------|------------------------------|
-| `error` | 0     | Serious errors               |
-| `warning` | 1   | Caution-worthy situations    |
-| `success` | 2   | Positive events              |
-| `info` | 3     | General info messages         |
-| `debug` | 4     | Detailed internal logs       |
-| `highlight` | N/A | Emphasis-only (always shown) |
-
-You can configure the default level using:
-
-```ts
-createLogora({ level: LogLevel.Warning });
-```
-
-Only `warning` and more critical messages will be displayed.
-
----
-
-## Formatting and Templates
-
-You can use numbered placeholders (`{0}`, `{1}`, etc.) in your log messages:
-
-```ts
-logger.debug("Process took {0}ms for file {1}", 132, "report.pdf");
-```
-
----
-
-## Colors
-
-Each log level outputs a colored label and message. You can override colors in the config.
-
----
-
-## Structure
-
-- `ILogora` — the interface for the logger
-- `Logora` — the logger implementation
-- `LogoraConfig` — default logger configuration
-- `createLogora()` — factory method to build an instance
-
----
+- No forced choices: you decide where and how logs are rendered.
+- Small and efficient: optimized for performance and simplicity.
+- Structured first: outputs receive fully structured log entries.
+- Extensible by design: designed to grow with your project’s needs.
 
 ## License
 
-MIT © [Sébastien Bosmans](https://github.com/boseba)
+MIT License
+
+© Sébastien Bosmans
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction...
