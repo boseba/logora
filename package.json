@@ -28,7 +28,7 @@
     "build": "tsup && tsc -p tsconfig.build.json",
     "build:dev": "tsup --watch",
     "build:prod": "npm run clean && npm run lint && npm run build",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "check": "npm run lint && npm run test && npm run build",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build:prod"
@@ -44,6 +44,7 @@
     "@eslint/js": "^9.25.1",
     "@vitest/coverage-v8": "^3.1.2",
     "eslint": "^9.25.1",
+    "rimraf": "^6.0.1",
     "tsup": "^8.4.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0",
