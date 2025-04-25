@@ -10,6 +10,6 @@ export default defineConfig({
   sourcemap: false, 
   splitting: false,
   treeshake: true,
-  target: "es2019", 
+  target: "es2020", 
   skipNodeModulesBundle: true
 });
