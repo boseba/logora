@@ -253,7 +253,7 @@ export class LogoraCore implements ILogora {
    */
   private _filterAndDispatch(level: LogLevel, entry: LogEntry): void {
     this._outputs.forEach((output) => {
-      if (this.logLevels[output.options.level] >= this.logLevels[level]) {
+      if (this.logLevels[output.options.level || this._config.level] >= this.logLevels[level]) {
         this._enqueue(() => output.writer.log(entry), entry);
       }
     });

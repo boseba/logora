@@ -16,8 +16,7 @@ describe("LogoraCore", () => {
     mockOutput = {
       name: "test",
       options: {
-        level: LogLevel.Debug,
-        timestampFormat: "HH:mm:ss",
+        level: LogLevel.Debug
       },
       writer: {
         log: vi.fn((entry) => logs.push(entry)),
@@ -160,4 +159,59 @@ describe("LogoraCore", () => {
     );
   });
 });
+
+describe("LogoraCore log level behavior", () => {
+  let logs: LogEntry[];
+  let mockOutput: ILogoraOutput;
+
+  beforeEach(() => {
+    logs = [];
+
+    mockOutput = {
+      name: "test-output",
+      options: {}, // vide au début
+      writer: {
+        log: vi.fn((entry) => logs.push(entry)),
+        title: vi.fn(),
+        empty: vi.fn(),
+        clear: vi.fn(),
+        print: vi.fn(),
+      }
+    };
+  });
+
+  it("should use output-specific level if defined", async () => {
+    mockOutput.options.level = LogLevel.Error; // Définit niveau Error sur l'output
+
+    const logger = new LogoraCore({
+      level: LogLevel.Debug, // Globalement moins strict
+      outputs: [mockOutput]
+    });
+
+    logger.info("This should be ignored"); // Info < Error
+    logger.error("This should be logged"); // Error == Error
+
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+    expect(logs.length).toBe(1);
+    expect((logs[0].type as LogType)).toBe(LogType.Error);
+  });
+
+  it("should fallback to global level if output level is undefined", async () => {
+    // mockOutput.options.level est laissé vide ici
+    const logger = new LogoraCore({
+      level: LogLevel.Info, // Globalement plus permissif
+      outputs: [mockOutput]
+    });
+
+    logger.debug("This should be ignored"); // Debug < Info
+    logger.info("This should be logged"); // Info == Info
+
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+    expect(logs.length).toBe(1);
+    expect(logs[0].type).toBe(LogType.Info);
+  });
+});
+
 
