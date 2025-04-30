@@ -54,6 +54,15 @@ export interface ILogora {
   success(message: string, ...args: unknown[]): void;
 
   /**
+   * Logs a highlighted message. This is used to give importance 
+   * to a message not related to a status.
+   *
+   * @param message Message template to render.
+   * @param args Values to interpolate into the message.
+   */
+  highlight(message: string, ...args: unknown[]): void;
+
+  /**
    * Logs a message dynamically using the specified log type.
    * Internally delegates to the corresponding method (e.g., `info`, `error`, etc.).
    *
