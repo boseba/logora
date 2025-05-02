@@ -1,6 +1,20 @@
+<p align="center">
+<a href="https://www.npmjs.com/package/logora">
+<img src="./assets/logora.png" height="150">
+</a>
+</p>
+
+<h1 align="center">
+Logora
+</h1>
+<p align="center">
+Minimal, type-safe logging built for Node.js developers: modular, modern, and lightweight.
+<p>
+
 # Logora
 
 [![NPM version](https://img.shields.io/npm/v/logora?style=flat-square)](https://www.npmjs.com/package/logora)
+[![Coverage Status](https://coveralls.io/repos/github/boseba/logora/badge.svg?branch=main)](https://coveralls.io/github/boseba/logora?branch=main)
 
 Logora is a lightweight, flexible, and modular logging core written in TypeScript.
 
