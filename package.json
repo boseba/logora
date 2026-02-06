@@ -7,12 +7,16 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./module": {
+      "types": "./dist/module.d.ts",
       "import": "./dist/module.mjs",
-      "require": "./dist/module.js"
+      "require": "./dist/module.js",
+      "default": "./dist/module.js"
     }
   },
   "main": "./dist/index.js",
