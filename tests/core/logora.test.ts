@@ -1,11 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { LogEntry } from "../../src/core/log-entry";
 import { LogoraCore } from "../../src/core/logora";
 import { LogLevel, LogType } from "../../src/enums";
-import type { LogEntry } from "../../src/core/log-entry";
-import { ILogoraOutput } from "../../src/models";
+import type { ILogoraOutput } from "../../src/models";
 
 // Helper to wait for queueMicrotask flush
-const waitMicrotask = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+const waitMicrotask = (): Promise<void> =>
+  new Promise<void>((resolve) => queueMicrotask(resolve));
 
 describe("LogoraCore", () => {
   let logs: LogEntry[];
@@ -13,13 +15,14 @@ describe("LogoraCore", () => {
 
   beforeEach(() => {
     logs = [];
+
     mockOutput = {
       name: "test",
       options: {
-        level: LogLevel.Debug
+        level: LogLevel.Debug,
       },
       writer: {
-        log: vi.fn((entry) => logs.push(entry)),
+        log: vi.fn((entry: LogEntry) => logs.push(entry)),
         title: vi.fn(),
         empty: vi.fn(),
         clear: vi.fn(),
@@ -30,6 +33,7 @@ describe("LogoraCore", () => {
 
   it("should enqueue and dispatch info log", async () => {
     const logger = new LogoraCore({ outputs: [mockOutput] });
+
     logger.info("Hello {0}", "World");
 
     await waitMicrotask();
@@ -42,20 +46,25 @@ describe("LogoraCore", () => {
 
   it("should respect log level filtering", async () => {
     mockOutput.options.level = LogLevel.Error;
+
     const logger = new LogoraCore({ outputs: [mockOutput] });
 
     logger.info("Should not be logged");
     await waitMicrotask();
+
     expect(logs.length).toBe(0);
 
     logger.error("Should be logged");
     await waitMicrotask();
+
     expect(logs.length).toBe(1);
   });
 
   it("should log highlight regardless of level", async () => {
     mockOutput.options.level = LogLevel.Error;
+
     const logger = new LogoraCore({ outputs: [mockOutput] });
+
     logger.highlight("Attention!");
 
     await waitMicrotask();
@@ -66,6 +75,7 @@ describe("LogoraCore", () => {
 
   it("should correctly scope logs", async () => {
     const logger = new LogoraCore({ outputs: [mockOutput] }).getScoped("DB");
+
     logger.info("Query OK");
 
     await waitMicrotask();
@@ -86,9 +96,7 @@ describe("LogoraCore", () => {
     expect(mockOutput.writer.title).toHaveBeenCalledWith("Start");
     expect(mockOutput.writer.empty).toHaveBeenCalledWith(2);
     expect(mockOutput.writer.clear).toHaveBeenCalled();
-    expect(mockOutput.writer.log).toHaveBeenCalledWith(
-      expect.objectContaining({ type: LogType.Raw })
-    );
+    expect(mockOutput.writer.print).toHaveBeenCalledWith("Raw log");
   });
 
   it("should call onDrop if queue is full", () => {
@@ -100,7 +108,7 @@ describe("LogoraCore", () => {
       onDrop,
     });
 
-    logger["_flushing"] = true; // Simulate active flush
+    logger["flushing"] = true;
     logger.debug("First");
     logger.debug("Second");
 
@@ -111,34 +119,42 @@ describe("LogoraCore", () => {
 
   it("should call onError if output throws", async () => {
     const onError = vi.fn();
+
     mockOutput.writer.log = vi.fn(() => {
       throw new Error("Output failed");
     });
 
     const logger = new LogoraCore({ outputs: [mockOutput], onError });
+
     logger.info("Test error");
 
     await waitMicrotask();
 
     expect(onError).toHaveBeenCalled();
-    const [err, entry] = onError.mock.calls[0];
-    expect(err).toBeInstanceOf(Error);
+
+    const [error, entry] = onError.mock.calls[0];
+
+    expect(error).toBeInstanceOf(Error);
     expect(entry.message).toBe("Logora flush error");
   });
 
   it("should handle errors during flush and call onError with fallback entry", async () => {
     const onError = vi.fn();
+
     mockOutput.writer.log = vi.fn(() => {
       throw new Error("Output failed");
     });
 
     const logger = new LogoraCore({ outputs: [mockOutput], onError });
+
     logger.info("This will fail");
 
     await waitMicrotask();
 
     expect(onError).toHaveBeenCalledTimes(1);
+
     const [error, fallbackEntry] = onError.mock.calls[0];
+
     expect(error).toBeInstanceOf(Error);
     expect(fallbackEntry.message).toBe("Logora flush error");
     expect(fallbackEntry.type).toBe(LogType.Error);
@@ -151,11 +167,8 @@ describe("LogoraCore", () => {
 
     await waitMicrotask();
 
-    expect(mockOutput.writer.log).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: LogType.Raw,
-        message: "Invalid numeric type fallback",
-      })
+    expect(mockOutput.writer.print).toHaveBeenCalledWith(
+      "Invalid numeric type fallback",
     );
   });
 });
@@ -169,49 +182,46 @@ describe("LogoraCore log level behavior", () => {
 
     mockOutput = {
       name: "test-output",
-      options: {}, // vide au début
+      options: {},
       writer: {
-        log: vi.fn((entry) => logs.push(entry)),
+        log: vi.fn((entry: LogEntry) => logs.push(entry)),
         title: vi.fn(),
         empty: vi.fn(),
         clear: vi.fn(),
         print: vi.fn(),
-      }
+      },
     };
   });
 
   it("should use output-specific level if defined", async () => {
-    mockOutput.options.level = LogLevel.Error; // Définit niveau Error sur l'output
+    mockOutput.options.level = LogLevel.Error;
 
     const logger = new LogoraCore({
-      level: LogLevel.Debug, // Globalement moins strict
-      outputs: [mockOutput]
+      level: LogLevel.Debug,
+      outputs: [mockOutput],
     });
 
-    logger.info("This should be ignored"); // Info < Error
-    logger.error("This should be logged"); // Error == Error
+    logger.info("This should be ignored");
+    logger.error("This should be logged");
 
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    await waitMicrotask();
 
     expect(logs.length).toBe(1);
-    expect((logs[0].type as LogType)).toBe(LogType.Error);
+    expect(logs[0].type).toBe(LogType.Error);
   });
 
   it("should fallback to global level if output level is undefined", async () => {
-    // mockOutput.options.level est laissé vide ici
     const logger = new LogoraCore({
-      level: LogLevel.Info, // Globalement plus permissif
-      outputs: [mockOutput]
+      level: LogLevel.Info,
+      outputs: [mockOutput],
     });
 
-    logger.debug("This should be ignored"); // Debug < Info
-    logger.info("This should be logged"); // Info == Info
+    logger.debug("This should be ignored");
+    logger.info("This should be logged");
 
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    await waitMicrotask();
 
     expect(logs.length).toBe(1);
     expect(logs[0].type).toBe(LogType.Info);
   });
 });
-
-
