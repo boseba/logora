@@ -1,6 +1,6 @@
 {
   "name": "logora",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A lightweight and extensible TypeScript logging core focused on structured logs and modular outputs.",
   "files": [
     "dist"

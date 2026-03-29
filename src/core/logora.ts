@@ -7,10 +7,10 @@ import { LogEntry } from "./log-entry";
 
 /**
  * Core implementation of the Logora logger.
- * 
+ *
  * Handles structured logging, output filtering, queueing, and asynchronous dispatch
  * of log entries to one or more registered outputs.
- * 
+ *
  * This class implements the ILogora public interface and can be scoped, extended,
  * or used in combination with multiple output transports.
  */
@@ -95,17 +95,10 @@ export class LogoraCore implements ILogora {
 
   /** @inheritdoc */
   print(message: string, ...args: unknown[]): void {
-    const entry: LogEntry = {
-      timestamp: new Date(),
-      type: LogType.Raw,
-      message,
-      args,
-      scope: this._scope?.label,
-    };
-
     this._outputs.forEach((output) => {
-      this._enqueue(() => output.writer.log(entry), entry);
+      this._enqueue(() => output.writer.print(message, ...args));
     });
+
     this.flush();
   }
 
@@ -151,14 +144,22 @@ export class LogoraCore implements ILogora {
   /** @inheritdoc */
   log(type: LogType, message: string, ...args: unknown[]): void {
     switch (type) {
-      case LogType.Raw: return this.print(message, ...args);
-      case LogType.Info: return this.info(message, ...args);
-      case LogType.Warning: return this.warning(message, ...args);
-      case LogType.Error: return this.error(message, ...args);
-      case LogType.Success: return this.success(message, ...args);
-      case LogType.Debug: return this.debug(message, ...args);
-      case LogType.Highlight: return this.highlight(message, ...args);
-      default: return this.print(message, ...args);
+      case LogType.Raw:
+        return this.print(message, ...args);
+      case LogType.Info:
+        return this.info(message, ...args);
+      case LogType.Warning:
+        return this.warning(message, ...args);
+      case LogType.Error:
+        return this.error(message, ...args);
+      case LogType.Success:
+        return this.success(message, ...args);
+      case LogType.Debug:
+        return this.debug(message, ...args);
+      case LogType.Highlight:
+        return this.highlight(message, ...args);
+      default:
+        return this.print(message, ...args);
     }
   }
 
@@ -197,7 +198,7 @@ export class LogoraCore implements ILogora {
             type: LogType.Error,
             message: "Logora flush error",
             args: [error],
-            scope: this._scope?.label
+            scope: this._scope?.label,
           };
           this._config.onError?.(error, fallbackEntry);
         }
@@ -235,7 +236,11 @@ export class LogoraCore implements ILogora {
    * @param args Arguments to inject into the message.
    * @returns A complete LogEntry object.
    */
-  private _createEntry(type: LogType, message: string, args: unknown[]): LogEntry {
+  private _createEntry(
+    type: LogType,
+    message: string,
+    args: unknown[],
+  ): LogEntry {
     return {
       timestamp: new Date(),
       type,
@@ -253,11 +258,13 @@ export class LogoraCore implements ILogora {
    */
   private _filterAndDispatch(level: LogLevel, entry: LogEntry): void {
     this._outputs.forEach((output) => {
-      if (this.logLevels[output.options.level || this._config.level] >= this.logLevels[level]) {
+      if (
+        this.logLevels[output.options.level || this._config.level] >=
+        this.logLevels[level]
+      ) {
         this._enqueue(() => output.writer.log(entry), entry);
       }
     });
     this.flush();
   }
 }
-
